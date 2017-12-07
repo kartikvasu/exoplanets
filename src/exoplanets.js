@@ -8,8 +8,6 @@
 var r = 960
   , format = d3.format(".2f");
 
-var socket = io();
-
 // http://en.wikipedia.org/wiki/Jupiter_mass
 var earthToJupiter = 317.83
   , jupiterToEarth = 0.00315;
@@ -56,11 +54,6 @@ var vis = d3.select("body").append("svg")
   .attr("width", r)
   .attr("height", r+100)
   .attr("class", "bubble");
-
-socket.emit('metadata', {
-  "width": r,
-  "height": r+100
-});
 
 //colorblindness
 vis.append("text")
@@ -121,40 +114,6 @@ function toggleMetric() {
     updateNodes();
   }
 }
-
-var timestamp = null;
-var lastMouseX = null;
-var lastMouseY = null;
-
-vis.on("mousemove", function() {
-  if (timestamp === null) {
-    timestamp = Date.now();
-    lastMouseX = d3.mouse(d3.select("svg").node())[0];
-    lastMouseY = d3.mouse(d3.select("svg").node())[1];
-    return;
-  }
-  
-  var now = Date.now();
-  var dt = now - timestamp;
-  var dx = d3.mouse(d3.select("svg").node())[0];
-  var dy = d3.mouse(d3.select("svg").node())[1];
-  var speedX = Math.round(dx/dt);
-  var speedY = Math.round(dy/dt);
-  timestamp = now;
-  lastMouseX = dx;
-  lastMouseY = dy;
-  var interaction = {
-    "sessionID": socket.io.engine.id,
-    "time": now,
-    "x": dx,
-    "y": dy,
-    "x-velocity": speedX || 0,
-    "y-velocity": speedY || 0,
-    "abs-velocity": Math.sqrt(Math.pow(speedX, 2) + Math.pow(speedY, 2)),
-    "type": "mousemove"
-  };
-  socket.emit('userEvent', interaction);
-});
 
 // earth mass info
 vis.append("rect")
@@ -304,65 +263,9 @@ d3.json("./exoplanets.json", function(json) {
       d3.select("#year").text("year discovered: "+d.year);
       d3.select("#atmosphere").text("atmosphere type: "+d.atmosphere);
       d3.select(this).style("fill", function(d) { return cFill(d).brighter(); });
-      if (timestamp === null) {
-        timestamp = Date.now();
-        lastMouseX = d3.mouse(d3.select("svg").node())[0];
-        lastMouseY = d3.mouse(d3.select("svg").node())[1];
-        return;
-      }
-      
-      var now = Date.now();
-      var dt = now - timestamp;
-      var dx = d3.mouse(d3.select("svg").node())[0];
-      var dy = d3.mouse(d3.select("svg").node())[1];
-      var speedX = Math.round(dx/dt);
-      var speedY = Math.round(dy/dt);
-      timestamp = now;
-      lastMouseX = dx;
-      lastMouseY = dy;
-    
-      var interaction = {
-        "sessionID": socket.io.engine.id,
-        "time": now,
-        "x": dx,
-        "y": dy,
-        "x-velocity": speedX || 0,
-        "y-velocity": speedY || 0,
-        "abs-velocity": Math.sqrt(Math.pow(speedX, 2) + Math.pow(speedY, 2)),
-        "type": "mouseover"
-      };
-      socket.emit('userEvent', interaction);
     })
     .on("mouseout", function(d) {
       d3.select(this).style("fill", function(d) { return cFill(d); });
-      if (timestamp === null) {
-        timestamp = Date.now();
-        lastMouseX = d3.mouse(d3.select("svg").node())[0];
-        lastMouseY = d3.mouse(d3.select("svg").node())[1];
-        return;
-      }
-      
-      var now = Date.now();
-      var dt = now - timestamp;
-      var dx = d3.mouse(d3.select("svg").node())[0];
-      var dy = d3.mouse(d3.select("svg").node())[1];
-      var speedX = Math.round(dx/dt);
-      var speedY = Math.round(dy/dt);
-      timestamp = now;
-      lastMouseX = dx;
-      lastMouseY = dy;
-    
-      var interaction = {
-        "sessionID": socket.io.engine.id,
-        "time": now,
-        "x": dx,
-        "y": dy,
-        "x-velocity": speedX || 0,
-        "y-velocity": speedY || 0,
-        "abs-velocity": Math.sqrt(Math.pow(speedX, 2) + Math.pow(speedY, 2)),
-        "type": "mouseout"
-      };
-      socket.emit('userEvent', interaction);
     });
 });
 

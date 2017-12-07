@@ -21,10 +21,6 @@ socket.on('connection', function( socket ) {
     console.log("Starting data collection: ");
     var all_data = [];
 
-    socket.on('metadata', function (data) {
-        console.log(data)
-    })
-
     socket.on('userEvent', function( data ) {
         console.log(data);
         all_data.push(data);
