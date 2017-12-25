@@ -21,8 +21,7 @@ var log = function(e) {
     speedY = Math.round(dy/dt);
     
     timestamp = now; // update global
-    
-    console.log(e.target.__data__);
+
     // construct interaction object
     var interaction = {
             "sessionID": socket.io.engine.id,
@@ -33,10 +32,14 @@ var log = function(e) {
             "y-velocity": speedY || 0,
             "abs-velocity": Math.sqrt(Math.pow(speedX, 2) + Math.pow(speedY, 2)) || 0,
             "type": e.type,
-            "data": CircularJSON.stringify(e.target.__data__),
-            "element": event.target.tagName
+            "data": JSON.stringify(e.target.__data__, function replacer(key, value) {
+                if (key === 'parent' || key === '__proto__') {
+                  return undefined;
+                }
+                return value;
+            }),
+            "element": event.target.nodeName
     };
-
     socket.emit('userEvent', interaction);
 };
 
